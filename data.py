@@ -55,7 +55,7 @@ class Data(torch.utils.data.Dataset):
         self.sampling_rate = sampling_rate
         self.text_cleaners = text_cleaners
         self.p_arpabet = p_arpabet
-        self.cmudict = cmudict.CMUDict(cmudict_path, keep_ambiguous=True)
+        self.cmudict = cmudict.CMUDict(cmudict_path, keep_ambiguous=True) if cmudict_path is not None else None
         if speaker_ids is None:
             self.speaker_ids = self.create_speaker_lookup_table(self.audiopaths_and_text)
         else:
@@ -86,7 +86,7 @@ class Data(torch.utils.data.Dataset):
         text = _clean_text(text, self.text_cleaners)
         words = re.findall(r'\S*\{.*?\}\S*|\S+', text)
         text = ' '.join([get_arpabet(word, self.cmudict)
-                         if random.random() < self.p_arpabet else word
+                         if self.cmudict is not None and random.random() < self.p_arpabet else word
                          for word in words])
         text_norm = torch.LongTensor(text_to_sequence(text))
         return text_norm
